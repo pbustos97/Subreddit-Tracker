@@ -1,101 +1,66 @@
 import discord
+#import reddit_bot
 from tokens import discord_token
 
-client = discord.Client()
+#client = discord.Client()
 
-DISPATCH = {
-    '^setup'    : setup,
-    '^leave'    : leave,
-    '^help'     : assist,
-}
+class discord_bot(discord.Client):
+    async def printReddit(url, channelId):
+        channel = client.get_channel(channelId)
+        if channel:
+            await channel.send(f'{url}')
 
-async def printReddit(url, channelId):
-    channel = client.get_channel(channelId)
-    if channel:
-        await channel.send('{}'.format(url))
+    async def assist():
+        msg = '```\n'
+        msg += '^setup subreddit1 subreddit2 ... subredditN\n'
+        msg += '^leave\n'
+        msg += '^help\n'
+        msg += '```'
+        return msg
 
-async def assist():
-    msg = '```\n'
-    msg += '^setup\n'
-    msg += '^leave\n'
-    msg += '```'
-    return msg
-
-async def dispatch(function, message):
-    msg = ''
-    func = DISPATCH[function]
-    author = message.author
-    if func == setup:
-        msg = func(message)
+    async def dispatch(function, message):
+        msg = ''
+        func = DISPATCH[function]
+        author = message.author
+        if func == setup:
+            msg = func(message)
 
 
-async def setup(message):
-    channel = message.channel
-    # Save channel location to file or append to list
+    async def setup(message):
+        channel = message.channel
+        multiredditList = []
+        subredditList = message.content.split()
+        subredditList = subredditList[1:]
+        flairList = ['CPU', 'GPU']
+        from intermediate import intermediate
+        intermediate = intermediate(subredditList, flairList, int(channel.id))
+        intermediate.reddit()
 
-
-    await channel.send('What subreddits do you want to track? (Space Separated)')
-
-    def addSubreddits(m):
-        if m.author.id == message.author.id:
-            subredditList = m.content.split()
-            subredditTemplate = 'r/'
-            multiredditList = []
-            for subreddit in subredditList:
-                subredditLink = subredditTemplate + subreddit
-                multiredditList.append(subredditLink)
-
-            # Call multireddit creation from reddit_bot.py
-            return True
-        else:
-            await channel.send('Only {.author} can reply with subreddits to track'.format(message))
-            return False
-
-    def addFlairs(m):
-        if m.author.id == message.author.id:
-            flairList = m.content.split(',')
-
-        else:
-            await channel.send('Only {.author} can reply with flairs to track'.format(message))
-            return False
-
-    await channel.send('What subreddits do you want to track? (Space Separated)')
-
-    msg = await client.wait_for('message', addSubreddits=addSubreddits)
-
-    if msg == false:
-        await channel.send('Setup failed')
+    async def leave(message):
         return
 
+    #@client.event
+    async def on_ready():
+        print("Logged in as: {0.user}".format(client))
 
-    await channel.send('What subreddits do you want to track? (Space Separated)')
-    msg = msg = await client.wait_for('message', addFlairs=addFlairs)
+    #@client.event
+    async def on_message(message):
+        if message.author == client.user:
+            return
 
-    if msg == True:
-        await channel.send('Setup complete')
-        return
-    else:
-        await channel.send('Setup failed')
-
-
-#async def leave(message):
+        serverId = message.guild.id
+        channelId = message.channel.id
+        if message.content.startswith('^setup'):
+            await setup(message)
+        if message.content.startswith('^hello'):
+            await message.channel.send('hello {}'.format(message.author))
 
 
 
-@client.event
-async def on_ready():
-    print("Logged in as: {0.user}".format(client))
+    DISPATCH = {
+        '^setup'    : setup,
+        '^leave'    : leave,
+        '^help'     : assist,
+    }
 
-@client.event
-async def on_message(message):
-    if message.author == client.user:
-        return
-
-    if message.content.startswith('$hello'):
-        await message.channel.send('Hello!')
-
-@client.event
-async def display_new_posts():
-    await 
-
-client.run(discord_token)
+#client.run(discord_token)
