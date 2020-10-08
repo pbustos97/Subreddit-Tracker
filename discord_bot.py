@@ -5,12 +5,17 @@ from tokens import discord_token
 #client = discord.Client()
 
 class discord_bot(discord.Client):
-    async def printReddit(url, channelId):
-        channel = client.get_channel(channelId)
+    def __init__(self, parent):
+        super().__init__()
+        self.parent = parent
+
+    async def printReddit(self, url, channelId):
+        channel = self.get_channel(channelId)
+        print(channel)
         if channel:
             await channel.send(f'{url}')
 
-    async def assist():
+    async def assist(self):
         msg = '```\n'
         msg += '^setup subreddit1 subreddit2 ... subredditN\n'
         msg += '^leave\n'
@@ -18,49 +23,33 @@ class discord_bot(discord.Client):
         msg += '```'
         return msg
 
-    async def dispatch(function, message):
-        msg = ''
-        func = DISPATCH[function]
-        author = message.author
-        if func == setup:
-            msg = func(message)
-
-
-    async def setup(message):
+    async def setup(self, message):
         channel = message.channel
         multiredditList = []
         subredditList = message.content.split()
         subredditList = subredditList[1:]
         flairList = ['CPU', 'GPU']
-        from intermediate import intermediate
-        intermediate = intermediate(subredditList, flairList, int(channel.id))
-        intermediate.reddit()
+        self.parent.startRedditBot(subredditList, channel.id)
 
-    async def leave(message):
-        return
+    async def leave(self, channelId):
+        self.parent.stopRedditBot(channelId)
 
     #@client.event
-    async def on_ready():
-        print("Logged in as: {0.user}".format(client))
+    async def on_ready(self):
+        print("Logged in as: {0.user}".format(self))
 
     #@client.event
-    async def on_message(message):
-        if message.author == client.user:
+    async def on_message(self, message):
+        if message.author == self.user:
             return
 
         serverId = message.guild.id
         channelId = message.channel.id
         if message.content.startswith('^setup'):
-            await setup(message)
-        if message.content.startswith('^hello'):
-            await message.channel.send('hello {}'.format(message.author))
+            await self.setup(message)
+        if message.content.startswith('^leave'):
+            await self.leave(message.channel.id)
 
 
-
-    DISPATCH = {
-        '^setup'    : setup,
-        '^leave'    : leave,
-        '^help'     : assist,
-    }
-
-#client.run(discord_token)
+# client = discord_bot()
+# client.run(discord_token)
