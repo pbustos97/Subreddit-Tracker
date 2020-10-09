@@ -1,11 +1,12 @@
 import praw
 import threading
+import asyncio
 import time
 from tokens import reddit_id, reddit_secret, reddit_username, reddit_password
 
 # Used for different instances of the reddit bot
 class reddit_bot (threading.Thread):
-    def __init__(self, subredditList, flairList, channelId, parent):
+    def __init__(self, subredditList, flairList, channelId, parent, loop):
         threading.Thread.__init__(self)
         self.parent = parent
         self.subredditList = subredditList
@@ -19,6 +20,7 @@ class reddit_bot (threading.Thread):
             password=reddit_password
         )
         self.multireddit = self.reddit.multireddit(reddit_username, str(channelId))
+        self.discordLoop = loop
 
         # Set to True from outside of class when user calls '^leave' command
         self.deletedMultireddit = False
@@ -30,37 +32,37 @@ class reddit_bot (threading.Thread):
             print(e)
         self.deletedMultireddit = False
         self.multireddit = self.reddit.multireddit(reddit_username, str(self.channelId))
-        print('Multireddit created')
 
+        print(f'Multireddit created in {self.channelId}')
+        
         for subreddit in self.subredditList:
             self.multireddit.add(subreddit)
 
-        print('Multireddit stream start')
-        for submission in self.multireddit.stream.submissions():
-            if self.deletedMultireddit == True:
-                return
-            print(submission.title)
-            print()
-            #print(submission.link_flair_text)
-            url = 'https://www.reddit.com' + str(submission.permalink)
-            if self.flairList:
-                if submission.link_flair_text in self.flairList:
-                    #self.printUrl(submission.subreddit.display_name, url)
-                    self.parent.discordPrint(url, self.channelId)
-                    # Send url and channelId back into the intermediate class
-            else:
-                #self.printUrl(submission.subreddit.display_name, url)
-                self.parent.discordPrint(url, self.channelId)
-                # Send url and channelId back into the intermediate class
+        print(f'Multireddit stream start in {self.channelId}')
+        
+        for submission in self.multireddit.stream.submissions(skip_existing=True):
             if self.deletedMultireddit == True:
                 return
 
+            url = 'https://www.reddit.com' + str(submission.permalink)
+            if len(self.flairList) > 0:
+                if str(submission.link_flair_text).lower() in self.flairList:
+                    result = asyncio.run_coroutine_threadsafe(self.parent.discordPrint(url, self.channelId), self.discordLoop)
+
+            else:
+                result = asyncio.run_coroutine_threadsafe(self.parent.discordPrint(url, self.channelId), self.discordLoop)
+
+            if self.deletedMultireddit == True:
+                return
+
+    # Debug terminal printer
     def printUrl(self, subredditName, url):
         print(subredditName)
         print(url)
         print()
 
-    async def delMultireddit(self):
+    # Deletes multireddit and stops thread from continuing to run
+    def delMultireddit(self):
         print('Deleting Multireddit')
         try:
             self.deletedMultireddit = True
