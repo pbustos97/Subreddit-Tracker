@@ -1,4 +1,5 @@
 import discord
+import asyncio
 #import reddit_bot
 from tokens import discord_token
 
@@ -29,21 +30,25 @@ class discord_bot(discord.Client):
         subredditList = subredditList[1:]
         flairList = []
         def check(msg):
-            if msg.author == message.author:
+            if msg.author == message.author and msg.channel == message.channel:
                 return msg
         await channel.send('What flairs do you want to add? (Comma separated ex. [gpu,cpu,m.2 ssd,serious replies only,])')
         try:
-            msg = await self.wait_for('message', check=check)
-        except:
-            await chanel.send(f'{message.author} needs to set the flairs in the {channel} text channel')
-            return
-        flairList = msg.content.split(',')
-        for i in range(0, len(flairList)):
-            flairList[i] = flairList[i].lower()
-        #print(flairList)
-        result = self.parent.startRedditBot(subredditList, flairList, channel.id)
-        if result != True:
-            await channel.send(result)
+            msg = await self.wait_for('message', timeout=20.0, check=check)
+        except asyncio.TimeoutError:
+            await channel.send('All posts in {} will be posted.'.format(subredditList))
+            result = self.parent.startRedditBot(subredditList, [], channel.id)
+            if result != True:
+                await channel.send(result)
+        else:
+            flairList = msg.content.split(',')
+            for i in range(0, len(flairList)):
+                flairList[i] = flairList[i].lower()
+            #print(flairList)
+            result = self.parent.startRedditBot(subredditList, flairList, channel.id)
+            if result != True:
+                await channel.send(result)
+            await channel.send('{} posts in {} will be posted.'.format(flairList, subredditList))
 
     async def leave(self, channelId):
         self.parent.stopRedditBot(channelId)

@@ -34,7 +34,7 @@ class reddit_bot (threading.Thread):
         self.multireddit = self.reddit.multireddit(reddit_username, str(self.channelId))
 
         print(f'Multireddit created in {self.channelId}')
-        
+
         for subreddit in self.subredditList:
             self.multireddit.add(subreddit)
 
@@ -69,9 +69,9 @@ class reddit_bot (threading.Thread):
             self.multireddit.delete()
             self._running = False
             self.do_run = False
-            print('Multireddit Deleted')
+            print(f'Multireddit Deleted for channel {self.channelId}')
             return True
         except Exception as e:
             print(e)
-        print('Mulireddit Deletion Failed')
+        print(f'Mulireddit Deletion Failed for channel {self.channelId}')
         return False
