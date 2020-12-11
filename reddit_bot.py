@@ -37,23 +37,28 @@ class reddit_bot (threading.Thread):
 
         for subreddit in self.subredditList:
             self.multireddit.add(subreddit)
-
-        print(f'Multireddit stream start in {self.channelId}')
         
-        for submission in self.multireddit.stream.submissions(skip_existing=True):
-            if self.deletedMultireddit == True:
-                return
+        while self.deletedMultireddit == False:
+            try:
+                print(f'Multireddit stream start in {self.channelId}')
+                for submission in self.multireddit.stream.submissions(skip_existing=True):
+                    if self.deletedMultireddit == True:
+                        return
 
-            url = 'https://www.reddit.com' + str(submission.permalink)
-            if len(self.flairList) > 0:
-                if str(submission.link_flair_text).lower() in self.flairList:
-                    result = asyncio.run_coroutine_threadsafe(self.parent.discordPrint(url, self.channelId), self.discordLoop)
+                    url = 'https://www.reddit.com' + str(submission.permalink)
+                    if len(self.flairList) > 0:
+                        if str(submission.link_flair_text).lower() in self.flairList:
+                            result = asyncio.run_coroutine_threadsafe(self.parent.discordPrint(url, self.channelId), self.discordLoop)
 
-            else:
-                result = asyncio.run_coroutine_threadsafe(self.parent.discordPrint(url, self.channelId), self.discordLoop)
+                    else:
+                        result = asyncio.run_coroutine_threadsafe(self.parent.discordPrint(url, self.channelId), self.discordLoop)
 
-            if self.deletedMultireddit == True:
-                return
+                    if self.deletedMultireddit == True:
+                        return
+
+            except Exception as e:
+                print(f'{e}')
+                print(f'Attempting to restart thread')
 
     # Debug terminal printer
     def printUrl(self, subredditName, url):
