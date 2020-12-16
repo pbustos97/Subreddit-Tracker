@@ -34,8 +34,8 @@ class intermediate:
                 self.redditBotList.remove(i)
 
     # Intermediate function to send urls from Reddit to Discord
-    async def discordPrint(self, url, channelId):
-        await self.discordBot.printReddit(url, channelId)
+    async def discordPrint(self, data, channelId):
+        await self.discordBot.printReddit(data, channelId)
 
     # Starts the Discord bot and stores it inside the class
     def startDiscordBot(self):

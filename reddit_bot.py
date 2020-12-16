@@ -45,13 +45,15 @@ class reddit_bot (threading.Thread):
                     if self.deletedMultireddit == True:
                         return
 
-                    url = 'https://www.reddit.com' + str(submission.permalink)
+                    data = []
+                    data.append('https://www.reddit.com' + str(submission.permalink))
+                    data.append(submission.title)
                     if len(self.flairList) > 0:
                         if str(submission.link_flair_text).lower() in self.flairList:
-                            result = asyncio.run_coroutine_threadsafe(self.parent.discordPrint(url, self.channelId), self.discordLoop)
+                            result = asyncio.run_coroutine_threadsafe(self.parent.discordPrint(data, self.channelId), self.discordLoop)
 
                     else:
-                        result = asyncio.run_coroutine_threadsafe(self.parent.discordPrint(url, self.channelId), self.discordLoop)
+                        result = asyncio.run_coroutine_threadsafe(self.parent.discordPrint(data, self.channelId), self.discordLoop)
 
                     if self.deletedMultireddit == True:
                         return

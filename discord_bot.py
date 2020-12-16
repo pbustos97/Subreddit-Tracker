@@ -8,11 +8,13 @@ class discord_bot(discord.Client):
         super().__init__(loop=loop)
         self.parent = parent
 
-    async def printReddit(self, url, channelId):
+    async def printReddit(self, data, channelId):
         channel = self.get_channel(channelId)
-        #print(channel)
         if channel:
-            await channel.send(f'{url}')
+            embed = discord.Embed(
+                title = f'{data[1]}',
+                description = f'{data[0]}')
+            await channel.send(embed=embed)
         else:
             print(f'Channel {channel} does not exist')
 
