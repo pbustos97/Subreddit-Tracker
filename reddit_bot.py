@@ -2,7 +2,27 @@ import praw
 import threading
 import asyncio
 import time
-from tokens import reddit_id, reddit_secret, reddit_username, reddit_password
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
+reddit_id = None
+reddit_secret = None
+reddit_username = None
+reddit_password = None
+
+try:
+    reddit_id = os.environ['reddit_id']
+    reddit_secret = os.environ['reddit_secret']
+    reddit_username = os.environ['reddit_username']
+    reddit_password = os.environ['reddit_password']
+except Exception as e:
+    print(e)
+
+    reddit_id = os.getenv('reddit_id')
+    reddit_secret = os.getenv('reddit_secret')
+    reddit_username = os.getenv('reddit_username')
+    reddit_password = os.getenv('reddit_password')
 
 # Used for different instances of the reddit bot
 class reddit_bot (threading.Thread):

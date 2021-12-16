@@ -1,9 +1,22 @@
 import threading
 import asyncio
 import time
+import os
+
 from discord_bot import discord_bot
 from reddit_bot import reddit_bot
-from tokens import discord_token
+
+from dotenv import load_dotenv
+load_dotenv()
+
+discord_token = None
+
+try:
+    discord_token = os.environ['discord_token']
+except Exception as e:
+    print(e)
+    discord_token = os.getenv('discord_token')
+
 
 # Intermediate class to circumvent the circular dependency needed between the two API wrappers
 class intermediate:

@@ -1,7 +1,5 @@
 import discord
 import asyncio
-#import reddit_bot
-from tokens import discord_token
 
 class discord_bot(discord.Client):
     def __init__(self, parent, loop):
