@@ -1,6 +1,19 @@
-FROM python:slim
+FROM alpine:latest
 
-RUN useradd tracker
+ENV USER=tracker
+ENV UID=38403
+ENV GID=48305
+
+RUN apk --no-cache add gcc musl-dev python3 python3-dev curl
+RUN addgroup -S tracker
+RUN adduser \
+    --disabled-password \
+    --gecos "" \
+    --home "$(pwd)" \
+    --ingroup "$USER" \
+    --no-create-home \
+    --uid "$UID" \
+    "$USER"
 
 WORKDIR /home/tracker
 
@@ -18,4 +31,4 @@ RUN chown -R tracker:tracker ./
 USER tracker
 
 EXPOSE 80
-ENTRYPOINT ["./boot.sh"]
+CMD venv/bin/python intermediate.py

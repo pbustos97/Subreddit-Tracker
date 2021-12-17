@@ -1,3 +1,3 @@
 #!/bin/bash
 source venv/bin/activate
-python intermediate.py
+exec python intermediate.py
