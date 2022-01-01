@@ -20,7 +20,7 @@ WORKDIR /home/tracker
 COPY requirements.txt requirements.txt
 COPY .env .env
 
-RUN python -m venv venv
+RUN python3 -m venv venv
 RUN venv/bin/python -m pip install --upgrade pip
 RUN venv/bin/pip install -r requirements.txt
 
